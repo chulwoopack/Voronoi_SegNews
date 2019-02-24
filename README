@@ -1,5 +1,4 @@
 Modified and written by Chulwoo Pack (chulwoo.pack@gmail.com)
-written by Faisal Shafait (faisal.shafait@dfki.de)
 
 This repo contains Voronoi page segmentation code by K. Kise and modified by Faisal Shafait. I have modified the code to be robust on historical document image (e.g., historical newspaper image). Unlike original approach, two features have been added as following:
   - Geometric feature: Ratio of shape
