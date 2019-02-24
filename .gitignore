@@ -1,3 +1,4 @@
 *.o
 data/
 output/
+.DS_Store
