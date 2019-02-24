@@ -1,11 +1,10 @@
+Modified and written by Chulwoo Pack (chulwoo.pack@gmail.com)
 written by Faisal Shafait (faisal.shafait@dfki.de)
 
-This folder contains Voronoi page segmentation code by K. Kise. I have modified
-the code to compile it with g++, added voronoi namespace, restrucured the code
-to be usable as a library, and wrote wrapper classes to implement ISegmentPage
-interface. Besides I have made a few bug fixes that resulted in segmentation
-faults on 64-bit machines. The bug fixes are explicitly marked with /*Faisal
-Shafait's modifications*/ tags.
+This repo contains Voronoi page segmentation code by K. Kise and modified by Faisal Shafait. I have modified the code to be robust on historical document image (e.g., historical newspaper image). Unlike original approach, two features have been added as following:
+  - Geometric feature: Ratio of shape
+  - Adaptive distance based on the area
+
 
 1. How to Install
 
@@ -45,7 +44,7 @@ The code has two build files:
 
    Please send them to the address:
 
-	faisal.shafait@dfki.de
+	chulwoo.pack@gmail.com
 
 5. Note
 
