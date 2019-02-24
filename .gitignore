@@ -1,5 +1,6 @@
-*.o
 .DS_Store
+*.o
+*.tiff
 angle_hist
 dist_hist
 line
