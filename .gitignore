@@ -1,4 +1,8 @@
 *.o
+.DS_Store
+angle_hist
+dist_hist
+line
+
 data/
 output/
-.DS_Store
