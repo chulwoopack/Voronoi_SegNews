@@ -123,6 +123,7 @@ namespace voronoi{
     typedef struct edge_node{
         int	sp,ep;
         float conf;
+        int weight;
         int zone_idx;
         int zone[2];
         Coordinate xs,xe,ys,ye;  /* + (xs,ys)

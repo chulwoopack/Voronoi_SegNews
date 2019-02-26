@@ -385,6 +385,7 @@ namespace voronoi{
         lineseg[LINEnbr].lab2 = e->lab2;
         lineseg[LINEnbr].yn = OUTPUT;
         lineseg[LINEnbr].conf = 1.0;
+        lineseg[LINEnbr].weight = 1;
         lineseg[LINEnbr].zone_idx = 0;
         lineseg[LINEnbr].next = NULL;
         lineseg[LINEnbr].lineseg_idx = LINEnbr;
