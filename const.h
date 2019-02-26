@@ -25,7 +25,7 @@ namespace voronoi{
 #define INCLINE         10000    /* its increments */
 #define SITE_BOX        10000
 
-    /* MAX valures */
+    /* MAX values */
 #define UNSIGNED_MAX    0xFFFFFFFF /* max. of unsigned int */
     // Faisal Shafait's modification: changed NOLABEL to max_int instead of max_short
 #define NOLABEL   0xFFFFFFFF /* max. of unsigned int */
@@ -67,7 +67,6 @@ namespace voronoi{
 #define Ts_CONST      20     // 
 #define SHAPE_K       0.00625  // Depends on variation of size of CCs
 
-                          
     /* ボロノイ辺の出力情報 */
 #define OUTPUT    1
 #define NO_OUTPUT 0

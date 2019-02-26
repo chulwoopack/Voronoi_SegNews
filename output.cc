@@ -385,6 +385,10 @@ namespace voronoi{
         lineseg[LINEnbr].lab2 = e->lab2;
         lineseg[LINEnbr].yn = OUTPUT;
         lineseg[LINEnbr].conf = 1.0;
+        lineseg[LINEnbr].zone_idx = 0;
+        lineseg[LINEnbr].next = NULL;
+        lineseg[LINEnbr].lineseg_idx = LINEnbr;
+
         //printf("lineseg[%d]...label1:%d label2:%d\n",LINEnbr,e->lab1,e->lab2);
         LINEnbr++;
         point_edge++;

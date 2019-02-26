@@ -18,17 +18,51 @@ namespace voronoi{
     typedef unsigned int   HashVal;
     typedef double         Coord;
 
-    /* The structure for a Graph */
-    struct graph_edge{
-        int u;
-        int v;
-        int weight;
-    };
-    typedef struct{
-        int V;
-        // list < pair <int,int> >*adj;
+    // Structure to represent a min heap node 
+    struct MinHeapNode 
+    { 
+        int  v; 
+        int dist; 
+    }; 
+      
+    // Structure to represent a min heap 
+    struct MinHeap 
+    { 
+        int size;      // Number of heap nodes present currently 
+        int capacity;  // Capacity of min heap 
+        int *pos;     // This is needed for decreaseKey() 
+        struct MinHeapNode **array; 
+    }; 
 
-    } Graph;
+    /* Representation of graphs - start */
+    // A structure to represent an adjacency list node 
+    struct AdjListNode 
+    { 
+        int dest; 
+        int weight;
+        int lineseg_idx;
+        struct AdjListNode* next; 
+    }; 
+      
+    // A structure to represent an adjacency list 
+    struct AdjList 
+    { 
+        struct AdjListNode *head;  
+    }; 
+      
+    // A structure to represent a graph. A graph 
+    // is an array of adjacency lists. 
+    // Size of array will be V (number of vertices  
+    // in graph) 
+    struct Graph 
+    { 
+        int V; 
+        struct AdjList* array; 
+    }; 
+      
+    
+    /* Representation of graphs - end */
+    
     /* The structure for a vector */
     typedef struct{
         int x;
@@ -86,9 +120,11 @@ namespace voronoi{
     } Neighborhood;
 
     /* The structure for a Voronoi edge */
-    typedef struct{
+    typedef struct edge_node{
         int	sp,ep;
         float conf;
+        int zone_idx;
+        int zone[2];
         Coordinate xs,xe,ys,ye;  /* + (xs,ys)
                                     \
                                     \  Voronoi edge
@@ -98,6 +134,9 @@ namespace voronoi{
         Label lab1,lab2;  /* this Voronoi edge is between
                              CC of a label "lab1" and that of lab2 */
         unsigned short yn;
+
+        struct edge_node *next;
+        int lineseg_idx;
     } LineSegment;
 
     /* The structure for a Voronoi point */
