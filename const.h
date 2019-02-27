@@ -70,4 +70,7 @@ namespace voronoi{
     /* ボロノイ辺の出力情報 */
 #define OUTPUT    1
 #define NO_OUTPUT 0
+
+#define TRUE    1
+#define FALSE   2
 }

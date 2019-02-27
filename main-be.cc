@@ -13,9 +13,9 @@
 #include "extern.h"
 #include "const.h"
 #include "function.h"
+#include <sys/resource.h>
 
 using namespace voronoi;
-
 int main(int argc, char **argv) {
     FILE		*ofp;
     int 		i;
@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 
     unsigned int nlines=0;
     LineSegment	 *mlineseg;
+    printf("************************\nMEM USAGE:%ld\n************************\n",getMemoryUsage());
     voronoi_pageseg(&mlineseg,&nlines,&imgd1);
     for(i=0;i<nlines;i++) {
 	if(mlineseg[i].yn == OUTPUT &&

@@ -11,6 +11,9 @@
 #include "read_image.h"
 
 namespace voronoi {
+    /* main-be.c */
+    long getMemoryUsage();
+
     /* bit_func.c */
     int bit_get( ImageData *, Coordinate, Coordinate );
     void bit_set( ImageData *, Coordinate, Coordinate, int );
