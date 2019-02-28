@@ -60,6 +60,12 @@ namespace voronoi{
         struct AdjList* array; 
     }; 
       
+
+    /* The structure for zone */
+    typedef struct {
+        int len;
+        struct AdjListNode* head; 
+    } Zone;
     
     /* Representation of graphs - end */
     
@@ -89,6 +95,7 @@ namespace voronoi{
          float conf_median;
          int conf_idx;
     } Shape;
+
 
     /* A structure representing the barycentric coordinates of each connected component and the vertical and horizontal lengths of the rectangle surrounding it */
     /*

@@ -144,6 +144,7 @@ namespace voronoi {
     void voronoi( Coordinate, Coordinate );
 
     /* voronoi-pageseg.c */
+    struct AdjListNode* newAdjListNode(int dest, int lineseg_idx, int weight);
     void voronoi_pageseg(LineSegment ** ,unsigned int *, ImageData *);
     void set_param(int nm, int sr, float fr, int ta);
     void voronoi_colorseg(ImageData *, ImageData *, bool);

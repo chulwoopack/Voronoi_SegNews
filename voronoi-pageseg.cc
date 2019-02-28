@@ -21,6 +21,7 @@ namespace voronoi{
 
     BlackPixel 	*bpx;		/* Coordinates of black pixels and their labels */
     Shape       *shape;
+    Zone        *zone;
     Neighborhood	*neighbor;	/* Characteristic quantity between adjacent connected components */
     LineSegment	*lineseg;	/* Coordinates and labels of start and end points */
     LineSegment *lineseg_edge;
@@ -245,15 +246,82 @@ namespace voronoi{
             printf("%d \t\t %d\n", i, dist[i]); 
     } 
 
+    //
+    // for a
+    //      for b
+    //          comp(a,b)
+    bool sameZone(Zone query)
+    {
+        bool DEBUG = false;
+        bool sameLen = false;
+        struct AdjListNode* zCrawl;
+        struct AdjListNode* qCrawl;
+        if(DEBUG){
+            printf("**CURR ZONE BOARD**\n");
+            for(int i=0 ; i<ZONEnbr ; i++)
+            {
+                zCrawl = zone[i].head;
+                printf("zone[%d] \n head \n",i);
+                while(zCrawl)
+                {
+                    printf("-> %d ",zCrawl->lineseg_idx);
+                    zCrawl = zCrawl->next;
+                }
+                printf("\n");
+            }
+        }
+        
+        for(int i=0 ; i<ZONEnbr-1 ; i++)
+        {
+            zCrawl = zone[i].head;
+            qCrawl = query.head;
+
+            if(DEBUG) printf("\t[sameZone] comparing zone[%d].len:%d ... query.len:%d\n",i,zone[i].len,query.len);
+            if(zone[i].len != query.len)
+                continue;
+            else{
+                // Loop query sequence
+                while(qCrawl)
+                {
+                    if(DEBUG) printf("\t\t[sameZone] qCrawl:%d to ",qCrawl->lineseg_idx);
+                    zCrawl = zone[i].head;
+                    bool newSeq = true;
+                    // Loop previously found zone's lineseg sequence
+                    // if newly found zone's sequence contains at least one new lineseg, return False.
+                    while(zCrawl)
+                    {
+                        if(DEBUG) printf("%d ",zCrawl->lineseg_idx);
+                        if(qCrawl->lineseg_idx==zCrawl->lineseg_idx)
+                        {
+                            if(DEBUG) printf("... exist! \n",zCrawl->lineseg_idx,i);
+                            newSeq = false;
+                            break;
+                        }
+                        zCrawl = zCrawl->next;
+                    }
+                    // Sequence is found, early termination.
+                    if(qCrawl->next==NULL and newSeq==false){
+                        return true;
+                    }
+                    qCrawl = qCrawl->next;
+                }
+            }
+        } 
+        if(DEBUG) printf("\t\t[sameZone] no same sequence is found ... return false\n");
+        return false;
+    }
+
     void assignZone(struct Graph* graph, int dist[], int path[], int n, int src, int tar, int lineseg_idx_src_tar)
     {
-        printf("[assignZone] src:%d tar:%d\n",src,tar);
+        bool DEBUG = false;
+        if(DEBUG) printf("[assignZone] src:%d tar:%d\n",src,tar);
         //struct AdjListNode* printerCrawl = graph->array[parent].head; 
         int visited_lineseg_ZONEnbr;
         int loop_cnt=0;
         int visited_zone = TRUE;
         int parent = tar;
         int lineseg_idx;
+        
         struct AdjListNode* pCrawl;
         /*
         for(int i=0 ; i<graph->V ; i++)
@@ -286,8 +354,17 @@ namespace voronoi{
                 }
             }
             */
-            printf("[tar-...] lineseg[%d]: %d -> %d ... zone:%d\n",lineseg_idx,parent,path[parent],ZONEnbr);
+            if(DEBUG) printf("[tar-...] lineseg[%d]: %d -> %d \n",lineseg_idx,parent,path[parent]);
+            //if(ZONEnbr==0){
+            if(1){    
+                struct AdjListNode* newNode = newAdjListNode(-2,lineseg_idx,-2); 
+                newNode->next = zone[ZONEnbr].head; 
+                zone[ZONEnbr].head = newNode;
+                zone[ZONEnbr].len++;
+                //printf("-->>%d-->>",zone[ZONEnbr].head->lineseg_idx);
+            }
             //lineseg[lineseg_idx].zone[lineseg[lineseg_idx].zone_idx++] = ZONEnbr;
+            //else... checking whether found sequence is already in zone list.
             //visited_lineseg_ZONEnbr = lineseg[lineseg_idx].zone[lineseg[lineseg_idx].zone_idx];
             
             parent = path[parent];
@@ -313,7 +390,15 @@ namespace voronoi{
             visited_zone = FALSE;
         } 
         */
-        printf("[...-src] lineseg[%d]: %d -> %d ... zone:%d\n",lineseg_idx,parent,path[parent],ZONEnbr);
+        if(DEBUG) printf("[...-src] lineseg[%d]: %d -> %d \n",lineseg_idx,parent,path[parent]);
+        //if(ZONEnbr==0){
+        if(1){    
+            struct AdjListNode* newNode = newAdjListNode(-2,lineseg_idx,-2); 
+            newNode->next = zone[ZONEnbr].head; 
+            zone[ZONEnbr].head = newNode;
+            zone[ZONEnbr].len++;
+            //printf("-->>%d-->>",zone[ZONEnbr].head->lineseg_idx);
+        }
         //lineseg[lineseg_idx].zone[lineseg[lineseg_idx].zone_idx++] = ZONEnbr;
         //visited_lineseg_ZONEnbr = lineseg[lineseg_idx].zone[lineseg[lineseg_idx].zone_idx];
         
@@ -325,19 +410,36 @@ namespace voronoi{
             visited_zone = FALSE;
         }
         */
-        printf("[src-tar] lineseg[%d]: %d -> %d ... zone:%d\n",lineseg_idx_src_tar,src,tar,ZONEnbr);
+        if(DEBUG) printf("[src-tar] lineseg[%d]: %d -> %d \n",lineseg_idx_src_tar,src,tar);
         //lineseg[lineseg_idx_src_tar].zone[lineseg[lineseg_idx_src_tar].zone_idx++] = ZONEnbr;
-        //ZONEnbr++;
-        /*
-        if(visited_zone)
-            printf("[WARNING] This zone seems to be visited\n");
-        */
+        //if(ZONEnbr==0){
+        if(1){    
+            struct AdjListNode* newNode = newAdjListNode(-2,lineseg_idx_src_tar,-2); 
+            newNode->next = zone[ZONEnbr].head; 
+            zone[ZONEnbr].head = newNode;
+            zone[ZONEnbr].len++;
+            //printf("-->>%d-->>",zone[ZONEnbr].head->lineseg_idx);
+        }
+        ZONEnbr++;
+
+
+        if(DEBUG) printf("Found %d ZONE(s) \n\n",ZONEnbr-1);
+        if(DEBUG) printf("NEXT ZONE NBR:%d \n",ZONEnbr);
+        if(ZONEnbr>1 and sameZone(zone[ZONEnbr-1]))
+        {
+            if(DEBUG) printf("\t[WARNING] This zone seems to be visited ... so deleting lastly added zone...\n");
+            zone[ZONEnbr-1].head = NULL;
+            zone[ZONEnbr-1].len = 0;
+            //free(zone[ZONEnbr-1].head);
+            ZONEnbr--;
+        }
     }
 
     // The main function that calulates distances of shortest paths from src to all 
     // vertices. It is a O(ELogV) function 
     void dijkstra(struct Graph* graph, int src, int tar, int lineseg_idx) 
     { 
+        bool DEBUG = false;
         int V = graph->V;// Get the number of vertices in graph 
         int dist[V];      // dist values used to pick minimum weight edge in cut 
         int path[V];
@@ -406,7 +508,7 @@ namespace voronoi{
         if(dist[tar]!=INT_MAX)
             assignZone(graph,dist,path,V,src,tar,lineseg_idx);
         else
-            printf("From %d to %d is unreachable.\n",src,tar);
+            if(DEBUG) printf("From %d to %d is unreachable.\n",src,tar);
         
         
         /*
@@ -561,6 +663,7 @@ namespace voronoi{
     void voronoi_pageseg(LineSegment **mlineseg, 
                          unsigned int *nlines,
                          ImageData *imgd1) {
+        bool DEBUG = false;
 
         point_edge = 0;
         edge_nbr = 0;
@@ -578,6 +681,13 @@ namespace voronoi{
         bpx=(BlackPixel *)myalloc(sizeof(BlackPixel)* INITPIXEL);
 
         shape=(Shape * )myalloc(sizeof(Shape)* INITPIXEL);
+
+        zone =(Zone *)myalloc(sizeof(Zone)* ZONEMAX);
+        for (int i = 0; i < ZONEMAX; ++i) {
+            zone[i].head = NULL; 
+            zone[i].len = 0;
+        }
+            
 
         /* Site ·¿sites ¤ÎÎÎ°è³ÎÊÝ */
         sites = (struct Site *) myalloc(SITE_BOX*sizeof *sites);
@@ -974,7 +1084,7 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = -1;
+                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
 
@@ -1011,7 +1121,7 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = -1;
+                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
 
@@ -1051,7 +1161,7 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = -1;
+                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
                 printf("[right] addEdge(%d,%d,graph,lineseg:%d,weight:%d)\n",
@@ -1086,7 +1196,7 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = -1;
+                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
                 printf("[left] addEdge(%d,%d,graph,lineseg:%d,weight:%d)\n",
@@ -1111,9 +1221,11 @@ namespace voronoi{
                 int tar = lineseg[i].ep;
                 if((src==-1 && tar!=-1) or (src!=-1 && tar==-1))
                 {
-                    printf("src:%d tar:%d lineseg:%d (sp:(%d,%d) ep:(%d,%d))\n",src,tar,i,
+                    if(DEBUG){
+                        printf("src:%d tar:%d lineseg:%d (sp:(%d,%d) ep:(%d,%d))\n",src,tar,i,
                                                                                 lineseg[i].xs,lineseg[i].ys,
                                                                                 lineseg[i].xe,lineseg[i].ye);
+                    }
                     // Find corresponding edge_site
                     if(src==-1){
                         for(int e=0 ; e<edge_sites_idx ; e++)
@@ -1160,7 +1272,7 @@ namespace voronoi{
             //                    lineseg[i].ys,lineseg[i].ye);
             
             // For valid edges only
-            printf("lineseg[%d] sp[%d]:(%d,%d) ep[%d]:(%d,%d) weight:%d OUTPUT:%d\n",i,lineseg[i].sp,lineseg[i].xs,lineseg[i].ys,lineseg[i].ep,lineseg[i].xe,lineseg[i].ye,lineseg[i].weight,(lineseg[i].yn == OUTPUT));
+            if(DEBUG) printf("lineseg[%d] sp[%d]:(%d,%d) ep[%d]:(%d,%d) weight:%d OUTPUT:%d\n",i,lineseg[i].sp,lineseg[i].xs,lineseg[i].ys,lineseg[i].ep,lineseg[i].xe,lineseg[i].ye,lineseg[i].weight,(lineseg[i].yn == OUTPUT));
             if(lineseg[i].yn == OUTPUT 
                 && (lineseg[i].xs != lineseg[i].xe || lineseg[i].ys != lineseg[i].ye)
                 ) {
@@ -1203,8 +1315,19 @@ namespace voronoi{
             }
         }
         
-       
-        
+        struct AdjListNode* zCrawl;
+        printf("\n\n**FINAL ZONE BOARD (%d ZONE(s) TOTAL)**\n",ZONEnbr);
+        for(int i=0 ; i<ZONEnbr ; i++)
+        {
+            zCrawl = zone[i].head;
+            printf("zone[%d] \n head \n",i);
+            while(zCrawl)
+            {
+                printf("-> %d ",zCrawl->lineseg_idx);
+                zCrawl = zCrawl->next;
+            }
+            printf("\n");
+        }
         
 
         /*

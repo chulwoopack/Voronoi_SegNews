@@ -73,4 +73,6 @@ namespace voronoi{
 
 #define TRUE    1
 #define FALSE   2
+
+#define ZONEMAX   100
 }
