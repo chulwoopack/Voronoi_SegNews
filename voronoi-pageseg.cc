@@ -497,7 +497,7 @@ namespace voronoi{
         } 
         // print the calculated shortest distances 
         
-        //printArr(dist, V); 
+        if(DEBUG) printArr(dist, V); 
         /*
         printf("\n\nPATH:\n");
         for (int q=0 ; q<V ; q++){
@@ -505,8 +505,10 @@ namespace voronoi{
         }
         */
         
-        if(dist[tar]!=INT_MAX)
-            assignZone(graph,dist,path,V,src,tar,lineseg_idx);
+        if(dist[tar]!=INT_MAX){
+            //assignZone(graph,dist,path,V,src,tar,lineseg_idx);
+            return;
+        }
         else
             if(DEBUG) printf("From %d to %d is unreachable.\n",src,tar);
         
@@ -663,7 +665,7 @@ namespace voronoi{
     void voronoi_pageseg(LineSegment **mlineseg, 
                          unsigned int *nlines,
                          ImageData *imgd1) {
-        bool DEBUG = false;
+        bool DEBUG = true;
 
         point_edge = 0;
         edge_nbr = 0;
@@ -816,30 +818,19 @@ namespace voronoi{
         *mlineseg = (LineSegment *)malloc(LINEnbr*sizeof(LineSegment));
         for(int i=0;i<LINEnbr;i++) {
             (*mlineseg)[i] = lineseg[i];
-            if(lineseg[i].yn == OUTPUT &&
-               (lineseg[i].xs != lineseg[i].xe
-                || lineseg[i].ys != lineseg[i].ye)) {
-                /*
-                printf("[%d] s:(%d,%d) e:(%d,%d) ... sp:%d ep:%d\n",
-                        i,
-                        lineseg[i].xs,lineseg[i].ys,
-                        lineseg[i].xe,lineseg[i].ye,
-                        lineseg[i].sp,lineseg[i].ep);
-                */
-                
-                // Build a graph
-                addEdge(graph, lineseg[i].sp, lineseg[i].ep, i, 1); 
-                
-                /*
-                graph[lineseg[i].sp][lineseg[i].ep][0]=1;
-                graph[lineseg[i].ep][lineseg[i].sp][0]=1;
-                graph[lineseg[i].sp][lineseg[i].ep][1]=i;
-                graph[lineseg[i].ep][lineseg[i].sp][1]=i;
-                */
-
+            if(lineseg[i].yn == OUTPUT){
                 edge_nbr++;
+                // Build a graph
+                addEdge(graph, lineseg[i].sp, lineseg[i].ep, i, lineseg[i].weight); 
+            }
+            else if(lineseg[i].xs == lineseg[i].xe
+                and lineseg[i].ys == lineseg[i].ye)
+            {
+                // Build a graph
+                addEdge(graph, lineseg[i].sp, lineseg[i].ep, i, lineseg[i].weight); 
             }
         }
+        
         
 
 
@@ -985,7 +976,7 @@ namespace voronoi{
                         // end-point is on the edge
                         else{
                             edge_sites[edge_sites_idx].coord.x = (float)lineseg[i].xe;
-                            edge_sites[edge_sites_idx].coord.y = (float)lineseg[i].xe;
+                            edge_sites[edge_sites_idx].coord.y = (float)lineseg[i].ye;
                         }
                         edge_sites[edge_sites_idx].sitenbr = nsites++;
                         edge_sites_idx++;
@@ -1060,6 +1051,7 @@ namespace voronoi{
         int prev_edge_sites_idx_temp;
         // line_len is for assigning weight to lineseg
         int line_len;
+        int edge_weight = 1;
         
         // case 1: edges on the top
         prev_edge_sites_idx = top_left_idx;
@@ -1072,7 +1064,7 @@ namespace voronoi{
                     prev_edge_sites_idx_temp = i;
                     continue;
                 }
-                line_len = int(edge_sites[i].coord.x-edge_sites[prev_edge_sites_idx_temp].coord.x);
+                line_len = int(edge_sites[i].coord.x-edge_sites[prev_edge_sites_idx_temp].coord.x)*edge_weight;
                 addEdge(graph,prev_edge_sites_idx,edge_sites[i].sitenbr,LINEnbr,line_len);
 
                 lineseg[LINEnbr].xs = edge_sites[prev_edge_sites_idx_temp].coord.x;
@@ -1109,7 +1101,7 @@ namespace voronoi{
                     prev_edge_sites_idx_temp = i;
                     continue;
                 }
-                line_len = int(edge_sites[i].coord.x-edge_sites[prev_edge_sites_idx_temp].coord.x);
+                line_len = int(edge_sites[i].coord.x-edge_sites[prev_edge_sites_idx_temp].coord.x)*edge_weight;
                 addEdge(graph,prev_edge_sites_idx,edge_sites[i].sitenbr,LINEnbr,line_len);
 
                 lineseg[LINEnbr].xs = edge_sites[prev_edge_sites_idx_temp].coord.x;
@@ -1149,7 +1141,7 @@ namespace voronoi{
                     prev_edge_sites_idx_temp = i;
                     continue;
                 }
-                line_len = int(edge_sites[i].coord.y-edge_sites[prev_edge_sites_idx_temp].coord.y);
+                line_len = int(edge_sites[i].coord.y-edge_sites[prev_edge_sites_idx_temp].coord.y)*edge_weight;
                 addEdge(graph,prev_edge_sites_idx,edge_sites[i].sitenbr,LINEnbr,line_len);
 
                 lineseg[LINEnbr].xs = edge_sites[prev_edge_sites_idx_temp].coord.x;
@@ -1184,7 +1176,7 @@ namespace voronoi{
                     prev_edge_sites_idx_temp = i;
                     continue;
                 }
-                line_len = int(edge_sites[i].coord.y-edge_sites[prev_edge_sites_idx_temp].coord.y);
+                line_len = int(edge_sites[i].coord.y-edge_sites[prev_edge_sites_idx_temp].coord.y)*edge_weight;
                 addEdge(graph,prev_edge_sites_idx,edge_sites[i].sitenbr,LINEnbr,line_len);
                 
                 lineseg[LINEnbr].xs = edge_sites[prev_edge_sites_idx_temp].coord.x;
@@ -1258,7 +1250,7 @@ namespace voronoi{
         }
 
         /* Edge handling - end */
-        
+        //printGraph(graph);
         
         ZONEnbr = 0;
         //lineseg_edge = (LineSegment *)myalloc(sizeof(LineSegment)* INITLINE);
@@ -1272,16 +1264,16 @@ namespace voronoi{
             //                    lineseg[i].ys,lineseg[i].ye);
             
             // For valid edges only
-            if(DEBUG) printf("lineseg[%d] sp[%d]:(%d,%d) ep[%d]:(%d,%d) weight:%d OUTPUT:%d\n",i,lineseg[i].sp,lineseg[i].xs,lineseg[i].ys,lineseg[i].ep,lineseg[i].xe,lineseg[i].ye,lineseg[i].weight,(lineseg[i].yn == OUTPUT));
             if(lineseg[i].yn == OUTPUT 
-                && (lineseg[i].xs != lineseg[i].xe || lineseg[i].ys != lineseg[i].ye)
+                || (lineseg[i].xs == lineseg[i].xe and lineseg[i].ys == lineseg[i].ye)
                 ) {
                 //if(lineseg[i].zone_idx<2)
                 if(1)
                 {
                     //printf("************************\nMEM USAGE:%lf GB\n************************\n",(float)(getMemoryUsage())/float(1000000));
     
-                    
+                    if(DEBUG) printf("lineseg[%d] sp[%d]:(%d,%d) ep[%d]:(%d,%d) weight:%d OUTPUT:%d\n",i,lineseg[i].sp,lineseg[i].xs,lineseg[i].ys,lineseg[i].ep,lineseg[i].xe,lineseg[i].ye,lineseg[i].weight,(lineseg[i].yn == OUTPUT));
+            
                     
                     // 1- v1,v2 <- v in e:
                     int src = lineseg[i].sp;
@@ -1292,13 +1284,17 @@ namespace voronoi{
                         //printf("src:%d tar:%d lineseg:%d\n",src,tar,i);
                         // 2- temporally delete e from adjacent matrix
 
+                        //printf("checkpoint1\n");
                         delEdge(graph,src,tar);
+                        //printf("checkpoint2\n");
                         delEdge(graph,tar,src);
+                        //printf("checkpoint3\n");
                         
                         //graph[src][tar][0] = 0;
                         //graph[tar][src][0] = 0;
 
                         // 3- find shortest path from v1 to v2
+                        
                         dijkstra(graph, src, tar, i);
 
                         // restore deleted e in adjacent matrix from step 2 
@@ -1315,6 +1311,8 @@ namespace voronoi{
             }
         }
         
+        
+        
         struct AdjListNode* zCrawl;
         printf("\n\n**FINAL ZONE BOARD (%d ZONE(s) TOTAL)**\n",ZONEnbr);
         for(int i=0 ; i<ZONEnbr ; i++)
@@ -1328,16 +1326,17 @@ namespace voronoi{
             }
             printf("\n");
         }
+  
         
-
-        /*
+/*
+        
         // Before unlink
         int _src;
         int _tar;
         int _lineseg_idx;
 
         struct AdjListNode* pCrawl;
-        _lineseg_idx = 221;
+        _lineseg_idx = 467;
         _src = lineseg[_lineseg_idx].sp;
         _tar = lineseg[_lineseg_idx].ep;
 
@@ -1387,7 +1386,7 @@ namespace voronoi{
             pCrawl = pCrawl->next; 
         } 
         printf("\n"); 
-
+        //printGraph(graph);
         dijkstra(graph,_src,_tar,_lineseg_idx); 
 
         // link src-tar
@@ -1412,8 +1411,8 @@ namespace voronoi{
             pCrawl = pCrawl->next; 
         } 
         printf("\n"); 
-        
-       */
+        */
+      
         
 
 

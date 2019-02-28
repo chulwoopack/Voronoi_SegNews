@@ -374,6 +374,8 @@ namespace voronoi{
         if(sp > SiteMax) SiteMax = sp;
         if(ep > SiteMax) SiteMax = ep;
 
+
+
         /* Store Voronoi edge information */
         lineseg[LINEnbr].sp = sp;
         lineseg[LINEnbr].ep = ep;
@@ -385,7 +387,9 @@ namespace voronoi{
         lineseg[LINEnbr].lab2 = e->lab2;
         lineseg[LINEnbr].yn = OUTPUT;
         lineseg[LINEnbr].conf = 1.0;
-        lineseg[LINEnbr].weight = 1;
+        //((lineseg[LINEnbr].xs-lineseg[LINEnbr].xe)^2+(lineseg[LINEnbr].ys-lineseg[LINEnbr].ye)^2)^(1/2)
+        int euclideanDist = sqrt ( pow ( double(lineseg[LINEnbr].xs) - double(lineseg[LINEnbr].xe) , 2 ) + pow ( double(lineseg[LINEnbr].ys) - double(lineseg[LINEnbr].ye) , 2 ));
+        lineseg[LINEnbr].weight = euclideanDist;
         lineseg[LINEnbr].zone_idx = 0;
         lineseg[LINEnbr].next = NULL;
         lineseg[LINEnbr].lineseg_idx = LINEnbr;
