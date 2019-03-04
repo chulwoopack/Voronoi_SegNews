@@ -131,8 +131,6 @@ namespace voronoi{
         int	sp,ep;
         float conf;
         int weight;
-        int zone_idx;
-        int zone[2];
         Coordinate xs,xe,ys,ye;  /* + (xs,ys)
                                     \
                                     \  Voronoi edge

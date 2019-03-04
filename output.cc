@@ -390,7 +390,6 @@ namespace voronoi{
         //((lineseg[LINEnbr].xs-lineseg[LINEnbr].xe)^2+(lineseg[LINEnbr].ys-lineseg[LINEnbr].ye)^2)^(1/2)
         int euclideanDist = sqrt ( pow ( double(lineseg[LINEnbr].xs) - double(lineseg[LINEnbr].xe) , 2 ) + pow ( double(lineseg[LINEnbr].ys) - double(lineseg[LINEnbr].ye) , 2 ));
         lineseg[LINEnbr].weight = euclideanDist;
-        lineseg[LINEnbr].zone_idx = 0;
         lineseg[LINEnbr].next = NULL;
         lineseg[LINEnbr].lineseg_idx = LINEnbr;
 

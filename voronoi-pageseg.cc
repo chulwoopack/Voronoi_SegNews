@@ -99,6 +99,15 @@ namespace voronoi{
     char     display_parameters = NO;
 
 
+    void printProgress (double percentage)
+    {
+        int val = (int) (percentage * 100);
+        int lpad = (int) (percentage * PBWIDTH);
+        int rpad = PBWIDTH - lpad;
+        printf ("\r\b%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+        fflush (stdout);
+    }
+
     long getMemoryUsage() 
     {
         struct rusage usage;
@@ -384,7 +393,6 @@ namespace voronoi{
             if(DEBUG) printf("\t[WARNING] This zone seems to be visited ... so deleting lastly added zone...\n");
             zone[ZONEnbr-1].head = NULL;
             zone[ZONEnbr-1].len = 0;
-            //free(zone[ZONEnbr-1].head);
             ZONEnbr--;
         }
         
@@ -468,7 +476,7 @@ namespace voronoi{
         */
         
         if(dist[tar]!=INT_MAX){
-            assignZone(graph,dist,path,V,src,tar,lineseg_idx);
+            //assignZone(graph,dist,path,V,src,tar,lineseg_idx);
             return;
         }
         else
@@ -1031,7 +1039,6 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
 
@@ -1068,7 +1075,6 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
 
@@ -1108,7 +1114,6 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
                 printf("[right] addEdge(%d,%d,graph,lineseg:%d,weight:%d)\n",
@@ -1143,7 +1148,6 @@ namespace voronoi{
                 lineseg[LINEnbr].ep = edge_sites[i].sitenbr;
                 lineseg[LINEnbr].yn = OUTPUT;
                 lineseg[LINEnbr].weight = line_len;
-                lineseg[LINEnbr].zone_idx = 0;
                 lineseg[LINEnbr].next = NULL;
                 lineseg[LINEnbr].lineseg_idx = LINEnbr;
                 printf("[left] addEdge(%d,%d,graph,lineseg:%d,weight:%d)\n",
@@ -1211,6 +1215,7 @@ namespace voronoi{
         ZONEnbr = 0;
         //lineseg_edge = (LineSegment *)myalloc(sizeof(LineSegment)* INITLINE);
         //int lineseg_edge_idx=0;
+        printf("\nFINDING ZONES...\n\n");
         for(int i=0 ; i<LINEnbr ; i++)
         {
             
@@ -1223,44 +1228,27 @@ namespace voronoi{
             if(lineseg[i].yn == OUTPUT 
                 || (lineseg[i].xs == lineseg[i].xe and lineseg[i].ys == lineseg[i].ye)
                 ) {
-                //if(lineseg[i].zone_idx<2)
-                if(1)
+                // 1- v1,v2 <- v in e:
+                int src = lineseg[i].sp;
+                int tar = lineseg[i].ep;
+                // src or tar is -1 when the lineseg is on the edge of paper. So pass this for now.
+                if(src!=-1 && tar!=-1)
                 {
-                    //printf("************************\nMEM USAGE:%lf GB\n************************\n",(float)(getMemoryUsage())/float(1000000));
-    
-                    // 1- v1,v2 <- v in e:
-                    int src = lineseg[i].sp;
-                    int tar = lineseg[i].ep;
-                    // src or tar is -1 when the lineseg is on the edge of paper. So pass this for now.
-                    if(src!=-1 && tar!=-1)
-                    {
-                        if(DEBUG) printf("lineseg[%d] sp[%d]:(%d,%d) ep[%d]:(%d,%d) weight:%d OUTPUT:%d\n",i,lineseg[i].sp,lineseg[i].xs,lineseg[i].ys,lineseg[i].ep,lineseg[i].xe,lineseg[i].ye,lineseg[i].weight,(lineseg[i].yn == OUTPUT));
-            
-                        //printf("src:%d tar:%d lineseg:%d\n",src,tar,i);
-                        // 2- temporally delete e from adjacent matrix
-
-                        delEdge(graph,src,tar);
-                        //printf("checkpoint2\n");
-                        delEdge(graph,tar,src);
-                        //printf("checkpoint3\n");
-                        
-                        //graph[src][tar][0] = 0;
-                        //graph[tar][src][0] = 0;
-
-                        // 3- find shortest path from v1 to v2
-                        //printGraph(graph);
-                        dijkstra(graph, src, tar, i);
-
-                        // restore deleted e in adjacent matrix from step 2 
-                        addEdge(graph,src,tar,i,lineseg[i].weight);
-                        //printGraph(graph);
-                        
-
-                        //graph[src][tar][0] = 1;
-                        //graph[tar][src][0] = 1;
-
-                    }
+                    //printf("\nFINDING ZONES...\n");
+                    printProgress(double(i)/double(LINEnbr));
+                    if(DEBUG) printf("lineseg[%d] sp[%d]:(%d,%d) ep[%d]:(%d,%d) weight:%d OUTPUT:%d\n",i,lineseg[i].sp,lineseg[i].xs,lineseg[i].ys,lineseg[i].ep,lineseg[i].xe,lineseg[i].ye,lineseg[i].weight,(lineseg[i].yn == OUTPUT));
+                    // 2- temporally delete e from adjacent matrix
+                    delEdge(graph,src,tar);
+                    //printf("checkpoint2\n");
+                    delEdge(graph,tar,src);
+                    //printf("checkpoint3\n");
                     
+                    // 3- find shortest path from v1 to v2
+                    //printGraph(graph);
+                    dijkstra(graph, src, tar, i);
+
+                    // restore deleted e in adjacent matrix from step 2 
+                    addEdge(graph,src,tar,i,lineseg[i].weight);
                 }
             }
         }

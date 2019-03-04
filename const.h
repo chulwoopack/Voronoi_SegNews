@@ -74,5 +74,8 @@ namespace voronoi{
 #define TRUE    1
 #define FALSE   2
 
-#define ZONEMAX   100
+#define ZONEMAX   1000
+
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
 }
