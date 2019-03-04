@@ -398,6 +398,22 @@ namespace voronoi{
         
     }
 
+    // The function that checking if there are more than 3 Voronoi-edges (lineseg) attached to a single Voronoi-point (site).
+    bool isForked(struct Graph* graph, int src, int tar)
+    {
+        int numEdges = 0;
+        struct AdjListNode* pCrawl = graph->array[src].head;
+        while(pCrawl)
+        {
+            numEdges++;
+            pCrawl = pCrawl->next;
+        }
+        if(numEdges>2)
+            return true;
+        else
+            return false;
+    }
+
     // The main function that calulates distances of shortest paths from src to all 
     // vertices. It is a O(ELogV) function 
     void dijkstra(struct Graph* graph, int src, int tar, int lineseg_idx) 
@@ -476,7 +492,7 @@ namespace voronoi{
         */
         
         if(dist[tar]!=INT_MAX){
-            //assignZone(graph,dist,path,V,src,tar,lineseg_idx);
+            assignZone(graph,dist,path,V,src,tar,lineseg_idx);
             return;
         }
         else
@@ -1237,18 +1253,21 @@ namespace voronoi{
                     //printf("\nFINDING ZONES...\n");
                     printProgress(double(i)/double(LINEnbr));
                     if(DEBUG) printf("lineseg[%d] sp[%d]:(%d,%d) ep[%d]:(%d,%d) weight:%d OUTPUT:%d\n",i,lineseg[i].sp,lineseg[i].xs,lineseg[i].ys,lineseg[i].ep,lineseg[i].xe,lineseg[i].ye,lineseg[i].weight,(lineseg[i].yn == OUTPUT));
-                    // 2- temporally delete e from adjacent matrix
-                    delEdge(graph,src,tar);
-                    //printf("checkpoint2\n");
-                    delEdge(graph,tar,src);
-                    //printf("checkpoint3\n");
-                    
-                    // 3- find shortest path from v1 to v2
-                    //printGraph(graph);
-                    dijkstra(graph, src, tar, i);
+                    if(isForked(graph,src,tar)==true or isForked(graph,tar,src)==true)
+                    {
+                        // 2- temporally delete e from adjacent matrix
+                        delEdge(graph,src,tar);
+                        //printf("checkpoint2\n");
+                        delEdge(graph,tar,src);
+                        //printf("checkpoint3\n");
+                        
+                        // 3- find shortest path from v1 to v2
+                        //printGraph(graph);
+                        dijkstra(graph, src, tar, i);
 
-                    // restore deleted e in adjacent matrix from step 2 
-                    addEdge(graph,src,tar,i,lineseg[i].weight);
+                        // restore deleted e in adjacent matrix from step 2 
+                        addEdge(graph,src,tar,i,lineseg[i].weight);
+                    }
                 }
             }
         }
