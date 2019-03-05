@@ -408,10 +408,10 @@ namespace voronoi{
             numEdges++;
             pCrawl = pCrawl->next;
         }
-        if(numEdges>2)
-            return true;
-        else
+        if(numEdges<3)
             return false;
+        else
+            return true;
     }
 
     // The main function that calulates distances of shortest paths from src to all 
