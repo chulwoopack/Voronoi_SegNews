@@ -98,6 +98,8 @@ namespace voronoi{
     char     output_avor = NO;
     char     display_parameters = NO;
 
+    float max ( float a, float b ) { return a > b ? a : b; }
+    float min ( float a, float b ) { return a < b ? a : b; }
 
     void printProgress (double percentage)
     {
@@ -116,6 +118,37 @@ namespace voronoi{
         else
             return 0;
     }
+
+    /* Function to remove duplicates from a 
+   unsorted linked list */
+    void removeDuplicates(struct CC *start) 
+    { 
+        struct CC *ptr1, *ptr2, *dup; 
+        ptr1 = start; 
+      
+        /* Pick elements one by one */
+        while (ptr1 != NULL && ptr1->next != NULL) 
+        { 
+            ptr2 = ptr1; 
+      
+            /* Compare the picked element with rest 
+               of the elements */
+            while (ptr2->next != NULL) 
+            { 
+                /* If duplicate then delete it */
+                if (ptr1->lab == ptr2->next->lab) 
+                { 
+                    /* sequence of steps is important here */
+                    dup = ptr2->next; 
+                    ptr2->next = ptr2->next->next; 
+                    delete(dup); 
+                } 
+                else /* This is tricky */
+                    ptr2 = ptr2->next; 
+            } 
+            ptr1 = ptr1->next; 
+        } 
+    } 
 
     // A utility function to create a new Min Heap Node 
     struct MinHeapNode* newMinHeapNode(int v, int dist) 
@@ -323,6 +356,8 @@ namespace voronoi{
         return false;
     }
 
+
+
     void assignZone(struct Graph* graph, int dist[], int path[], int n, int src, int tar, int lineseg_idx_src_tar)
     {
         bool DEBUG = false;
@@ -331,6 +366,7 @@ namespace voronoi{
         int lineseg_idx;
         struct AdjListNode* pCrawl;
         struct AdjListNode* newNode;
+        struct CC* newCC;
 
         // Get path[tar-...]
         while(path[parent]!=src)
@@ -346,13 +382,21 @@ namespace voronoi{
                 }
                 pCrawl = pCrawl->next;
             }
-            if(DEBUG) printf("[tar-...] lineseg[%d]: %d -> %d \n",lineseg_idx,parent,path[parent]);
-            
+            if(DEBUG) printf("[tar-...] lineseg[%d](lab:%d-lab:%d): %d -> %d \n",lineseg_idx,lineseg[lineseg_idx].lab1,lineseg[lineseg_idx].lab2,parent,path[parent]);
             
             newNode = newAdjListNode(-2,lineseg_idx,-2); 
             newNode->next = zone[ZONEnbr].head; 
             zone[ZONEnbr].head = newNode;
             zone[ZONEnbr].len++;
+
+            newCC = (struct CC*) myalloc(sizeof(struct CC));
+            newCC->lab = lineseg[lineseg_idx].lab1;
+            newCC->next = zone[ZONEnbr].cc_head;
+            zone[ZONEnbr].cc_head = newCC;
+            newCC = (struct CC*) myalloc(sizeof(struct CC));
+            newCC->lab = lineseg[lineseg_idx].lab2;
+            newCC->next = zone[ZONEnbr].cc_head;
+            zone[ZONEnbr].cc_head = newCC;
 
             parent = path[parent];
         }
@@ -369,19 +413,37 @@ namespace voronoi{
             }
             pCrawl = pCrawl->next;
         }
-        if(DEBUG) printf("[...-src] lineseg[%d]: %d -> %d \n",lineseg_idx,parent,path[parent]);
+        if(DEBUG) printf("[...-src] lineseg[%d](lab:%d-lab:%d): %d -> %d \n",lineseg_idx,lineseg[lineseg_idx].lab1,lineseg[lineseg_idx].lab2,parent,path[parent]);
     
         newNode = newAdjListNode(-2,lineseg_idx,-2); 
         newNode->next = zone[ZONEnbr].head; 
         zone[ZONEnbr].head = newNode;
         zone[ZONEnbr].len++;
+
+        newCC = (struct CC*) myalloc(sizeof(struct CC));
+        newCC->lab = lineseg[lineseg_idx].lab1;
+        newCC->next = zone[ZONEnbr].cc_head;
+        zone[ZONEnbr].cc_head = newCC;
+        newCC = (struct CC*) myalloc(sizeof(struct CC));
+        newCC->lab = lineseg[lineseg_idx].lab2;
+        newCC->next = zone[ZONEnbr].cc_head;
+        zone[ZONEnbr].cc_head = newCC;
         
         // Get path[src-tar]
-        if(DEBUG) printf("[src-tar] lineseg[%d]: %d -> %d \n",lineseg_idx_src_tar,src,tar);
+        if(DEBUG) printf("[src-tar] lineseg[%d](lab:%d-lab:%d): %d -> %d \n",lineseg_idx_src_tar,lineseg[lineseg_idx_src_tar].lab1,lineseg[lineseg_idx_src_tar].lab2,src,tar);
         newNode = newAdjListNode(-2,lineseg_idx_src_tar,-2); 
         newNode->next = zone[ZONEnbr].head; 
         zone[ZONEnbr].head = newNode;
         zone[ZONEnbr].len++;
+
+        newCC = (struct CC*) myalloc(sizeof(struct CC));
+        newCC->lab = lineseg[lineseg_idx_src_tar].lab1;
+        newCC->next = zone[ZONEnbr].cc_head;
+        zone[ZONEnbr].cc_head = newCC;
+        newCC = (struct CC*) myalloc(sizeof(struct CC));
+        newCC->lab = lineseg[lineseg_idx_src_tar].lab2;
+        newCC->next = zone[ZONEnbr].cc_head;
+        zone[ZONEnbr].cc_head = newCC;
         
         ZONEnbr++;
 
@@ -394,6 +456,250 @@ namespace voronoi{
             zone[ZONEnbr-1].head = NULL;
             zone[ZONEnbr-1].len = 0;
             ZONEnbr--;
+        }
+    }
+
+    // Given three colinear points p, q, r, the function checks if 
+    // point q lies on line segment 'pr' 
+    bool onSegment(Point p, Point q, Point r) 
+    { 
+        if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && 
+                q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y)) 
+            return true; 
+        return false; 
+    } 
+
+    // To find orientation of ordered triplet (p, q, r). 
+    // The function returns following values 
+    // 0 --> p, q and r are colinear 
+    // 1 --> Clockwise 
+    // 2 --> Counterclockwise 
+    int orientation(Point p, Point q, Point r) 
+    { 
+        int val = (q.y - p.y) * (r.x - q.x) - 
+                  (q.x - p.x) * (r.y - q.y); 
+      
+        if (val == 0) return 0;  // colinear 
+        return (val > 0)? 1: 2; // clock or counterclock wise 
+    } 
+    // The function that returns true if line segment 'p1q1' 
+    // and 'p2q2' intersect. 
+    bool doIntersect(Point p1, Point q1, Point p2, Point q2) 
+    { 
+        bool DEBUG = false;
+        // Find the four orientations needed for general and 
+        // special cases 
+        int o1 = orientation(p1, q1, p2); 
+        int o2 = orientation(p1, q1, q2); 
+        int o3 = orientation(p2, q2, p1); 
+        int o4 = orientation(p2, q2, q1); 
+      
+        // General case 
+        if (o1 != o2 && o3 != o4) {
+            if(DEBUG) printf("[doIntersect] general case ... p1q1:(%f,%f)-(%f,%f) p2q2:(%f,%f)-(%f,%f)\n",p1.x,p1.y,q1.x,q1.y,p2.x,p2.y,q2.x,q2.y);
+            return true; 
+        }
+            
+      
+        // Special Cases 
+        // p1, q1 and p2 are colinear and p2 lies on segment p1q1 
+        if (o1 == 0 && onSegment(p1, p2, q1)){
+            if(DEBUG) printf("[doIntersect] colinear ... (%f,%f) lies on segment (%f,%f)-(%f,%f)\n",p2.x,p2.y,p1.x,p1.y,q1.x,q1.y);
+            return true; 
+        } 
+      
+        // p1, q1 and p2 are colinear and q2 lies on segment p1q1 
+        if (o2 == 0 && onSegment(p1, q2, q1)){
+            if(DEBUG) printf("[doIntersect] colinear ... (%f,%f) lies on segment (%f,%f)-(%f,%f)\n",q2.x,q2.y,p1.x,p1.y,q1.x,q1.y);
+            return true;   
+        } 
+      
+        // p2, q2 and p1 are colinear and p1 lies on segment p2q2 
+        if (o3 == 0 && onSegment(p2, p1, q2)){
+            if(DEBUG) printf("[doIntersect] colinear ... (%f,%f) lies on segment (%f,%f)-(%f,%f)\n",p1.x,p1.y,p2.x,p2.y,q2.x,q2.y);
+            return true;   
+        } 
+      
+         // p2, q2 and q1 are colinear and q1 lies on segment p2q2 
+        if (o4 == 0 && onSegment(p2, q1, q2)){
+            if(DEBUG) printf("[doIntersect] colinear ... (%f,%f) lies on segment (%f,%f)-(%f,%f)\n",q1.x,q1.y,p2.x,p2.y,q2.x,q2.y);
+            return true;   
+        } 
+      
+        if(DEBUG) printf("[doIntersect] none ... p1q1:(%f,%f)-(%f,%f) p2q2:(%f,%f)-(%f,%f)\n",p1.x,p1.y,q1.x,q1.y,p2.x,p2.y,q2.x,q2.y);
+        return false; // Doesn't fall in any of the above cases 
+    } 
+    // Returns true if the point p lies inside the polygon[] with n vertices 
+    bool isInside(Point* polygon, int n, Point p) 
+    { 
+        bool DEBUG = false;
+        // There must be at least 3 vertices in polygon[] 
+        if (n < 3)  return false; 
+      
+        // Create a point for line segment from p to infinite 
+        Point extreme = {IMG_IMAX, p.y}; 
+      
+        // Count intersections of the above line with sides of polygon 
+        int count = 0, i = 0; 
+        do
+        { 
+            int next = (i+1)%n; 
+            // Check if the line segment from 'p' to 'extreme' intersects 
+            // with the line segment from 'polygon[i]' to 'polygon[next]' 
+            if (doIntersect(*(polygon+i), *(polygon+next), p, extreme)) 
+            { 
+                // If the point 'p' is colinear with line segment 'i-next', 
+                // then check if it lies on segment. If it lies, return true, 
+                // otherwise false 
+                if (orientation(*(polygon+i), p, *(polygon+next)) == 0) 
+                   return onSegment(*(polygon+i), p, *(polygon+next)); 
+                if(DEBUG) printf("[isInside] intersect!\n");
+                count++; 
+            } 
+            i = next; 
+        } while (i != 0); 
+      
+        // Return true if count is odd, false otherwise 
+        return count&1;  // Same as (count%2 == 1) 
+    } 
+
+    void CountCCsInZone(int zone_idx, Point p)
+    {
+        bool DEBUG = false;
+        /*
+        int i = 0;
+        int n = 4;//zone[zone_idx].len;
+        
+        Point p = {5, 5};
+        Point* polygon = (Point*) malloc(n * sizeof(Point));
+        
+        (polygon+i)->x = 0;
+        (polygon+i)->y = 0;
+        i++;
+
+        (polygon+i)->x = 0;
+        (polygon+i)->y = 10;
+        i++;
+
+        (polygon+i)->x = 10;
+        (polygon+i)->y = 10;
+        i++;
+
+
+        (polygon+i)->x = 10;
+        (polygon+i)->y = 0;
+        i++;
+        */
+
+
+        
+
+        /*
+        int i = 0;
+        int n = 3;
+        
+        Point p = {4, 4};
+        Point* polygon = (Point*) malloc(n * sizeof(Point));
+        
+        (polygon+i)->x = 0;
+        (polygon+i)->y = 0;
+        i++;
+
+        (polygon+i)->x = 5;
+        (polygon+i)->y = 5;
+        i++;
+
+        (polygon+i)->x = 5;
+        (polygon+i)->y = 0;
+        */
+        
+
+        
+        int i =0;
+        int n = zone[zone_idx].len;
+        int s_or_e = -1; // 0:start 1:end
+        //Point p = {215, 168};
+        Point* polygon = (Point*) malloc(n * sizeof(Point));
+        struct AdjListNode* pCrawl = zone[zone_idx].head;
+
+        if(DEBUG) printf("\n[CountCCsInZone] point ... (%f,%f)\n",p.x,p.y);
+        while(pCrawl)
+        {
+            if(DEBUG) printf("[CountCCsInZone] lineseg[%d] (%d,%d), (%d,%d)\n",pCrawl->lineseg_idx,lineseg[pCrawl->lineseg_idx].xs,lineseg[pCrawl->lineseg_idx].ys,lineseg[pCrawl->lineseg_idx].xe,lineseg[pCrawl->lineseg_idx].ye);
+            // To prevent segment fault
+            if(pCrawl->next != NULL)
+            {
+                // case 1: curr_lineseg.start == next_lineseg.start or next_lineseg.end
+                if((lineseg[pCrawl->lineseg_idx].xs==lineseg[pCrawl->next->lineseg_idx].xs 
+                    and lineseg[pCrawl->lineseg_idx].ys==lineseg[pCrawl->next->lineseg_idx].ys)
+                    or
+                   (lineseg[pCrawl->lineseg_idx].xs==lineseg[pCrawl->next->lineseg_idx].xe 
+                    and lineseg[pCrawl->lineseg_idx].ys==lineseg[pCrawl->next->lineseg_idx].ye))
+                {
+                    s_or_e = 0;
+                }
+                // case 2: curr_lineseg.end == next_lineseg.start or next_lineseg.end
+                else
+                {
+                    s_or_e = 1;
+                }
+            }
+            // case 3: special case: last lineseg.
+            if(i==n-1)
+            {
+                
+                (polygon+i)->x = lineseg[pCrawl->lineseg_idx].xs;
+                (polygon+i)->y = lineseg[pCrawl->lineseg_idx].ys;
+                i++;
+                (polygon+i)->x = lineseg[pCrawl->lineseg_idx].xe;
+                (polygon+i)->y = lineseg[pCrawl->lineseg_idx].ye;
+                i++;
+                
+                /*
+                (polygon+i)->x = 123;
+                (polygon+i)->y = 123;
+                i++;
+                (polygon+i)->x = 123;
+                (polygon+i)->y = 123;
+                i++;
+                */
+
+            }
+            else
+            {
+                if(s_or_e==0)
+                {
+                    (polygon+i)->x = lineseg[pCrawl->lineseg_idx].xs;
+                    (polygon+i)->y = lineseg[pCrawl->lineseg_idx].ys;
+                    i++;
+                }
+                else if (s_or_e==1)
+                {
+                    (polygon+i)->x = lineseg[pCrawl->lineseg_idx].xe;
+                    (polygon+i)->y = lineseg[pCrawl->lineseg_idx].ye;
+                    i++;
+                }
+            }
+            pCrawl = pCrawl->next;
+        }
+
+        if(DEBUG)
+        {
+            printf("[CountCCsInZone] polygon ... \n");
+            for(int i=0 ; i<n ; i++)
+            {
+                printf("[CountCCsInZone] (%f,%f)\n",(polygon+i)->x,(polygon+i)->y);
+            }
+        }
+
+        if(isInside(polygon, n, p))
+        {
+            if(DEBUG) printf("Yes \n");
+            zone[zone_idx].numOfCCs++;
+        }
+        else
+        {
+            if(DEBUG) printf("No \n"); 
         }
         
     }
@@ -691,7 +997,9 @@ namespace voronoi{
         zone =(Zone *)myalloc(sizeof(Zone)* ZONEMAX);
         for (int i = 0; i < ZONEMAX; ++i) {
             zone[i].head = NULL; 
+            zone[i].cc_head = NULL;
             zone[i].len = 0;
+            zone[i].numOfCCs = 0;
         }
             
 
@@ -797,7 +1105,7 @@ namespace voronoi{
 #ifdef TIME
         start = clock();
 #endif
-        erase();
+        //erase();
 
 #ifdef TIME
         end = clock();
@@ -1267,6 +1575,8 @@ namespace voronoi{
 
                         // restore deleted e in adjacent matrix from step 2 
                         addEdge(graph,src,tar,i,lineseg[i].weight);
+
+                        
                     }
                 }
             }
@@ -1275,6 +1585,9 @@ namespace voronoi{
         
         
         struct AdjListNode* zCrawl;
+        struct CC* cCrawl;
+        struct Point targetCC;
+        int numOfNoiseZone = 0;
         printf("\n\n**FINAL ZONE BOARD (%d ZONE(s) TOTAL)**\n",ZONEnbr);
         for(int i=0 ; i<ZONEnbr ; i++)
         {
@@ -1285,9 +1598,25 @@ namespace voronoi{
                 printf("-> %d ",zCrawl->lineseg_idx);
                 zCrawl = zCrawl->next;
             }
-            printf("\n");
+            cCrawl = zone[i].cc_head;
+            removeDuplicates(cCrawl);
+            //printf("\n cc_head \n",i);
+            while(cCrawl)
+            {
+                //printf("-> %d (%d,%d) ",cCrawl->lab,shape[cCrawl->lab].x_min,shape[cCrawl->lab].y_min);
+                targetCC.x = shape[cCrawl->lab].x_min+0.5;
+                targetCC.y = shape[cCrawl->lab].y_min+0.5;
+                CountCCsInZone(i,targetCC);
+
+                cCrawl = cCrawl->next;
+            }
+            if(zone[i].numOfCCs<2) numOfNoiseZone++;
+            printf("\nTotal %d CCs\n",zone[i].numOfCCs);
+            printf("\n\n");
         }
-  
+
+        printf("\nTotal %d noisy zone(s)\n",numOfNoiseZone);
+
         
 /*
         

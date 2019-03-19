@@ -37,7 +37,6 @@ int main(int argc, char **argv) {
 
     unsigned int nlines=0;
     LineSegment	 *mlineseg;
-    printf("************************\nMEM USAGE:%ld\n************************\n",getMemoryUsage());
     voronoi_pageseg(&mlineseg,&nlines,&imgd1);
     for(i=0;i<nlines;i++) {
 	if(mlineseg[i].yn == OUTPUT &&

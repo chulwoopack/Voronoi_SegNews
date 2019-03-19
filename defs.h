@@ -61,9 +61,16 @@ namespace voronoi{
     }; 
       
 
+    /* The structure for a Voronoi point */
+    struct CC{
+        int lab;
+        struct CC *next;
+    };
     /* The structure for zone */
     typedef struct {
         int len;
+        int numOfCCs;
+        struct CC* cc_head;
         struct AdjListNode* head; 
     } Zone;
     

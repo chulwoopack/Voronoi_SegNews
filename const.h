@@ -27,6 +27,7 @@ namespace voronoi{
 
     /* MAX values */
 #define UNSIGNED_MAX    0xFFFFFFFF /* max. of unsigned int */
+#define IMG_IMAX        10000
     // Faisal Shafait's modification: changed NOLABEL to max_int instead of max_short
 #define NOLABEL   0xFFFFFFFF /* max. of unsigned int */
 #define LABELMAX        NOLABEL

@@ -11,9 +11,7 @@
 #include "read_image.h"
 
 namespace voronoi {
-    /* main-be.c */
-    long getMemoryUsage();
-
+    
     /* bit_func.c */
     int bit_get( ImageData *, Coordinate, Coordinate );
     void bit_set( ImageData *, Coordinate, Coordinate, int );
@@ -30,20 +28,7 @@ namespace voronoi {
     void dtime();
 #endif
 
-    /* dijkstra.c */
-    struct MinHeapNode* newMinHeapNode(int v, int dist);
-    struct MinHeap* createMinHeap(int capacity);
-    void swapMinHeapNode(struct MinHeapNode** a, struct MinHeapNode** b);
-    void minHeapify(struct MinHeap* minHeap, int idx);
-    int isEmpty(struct MinHeap* minHeap);
-    struct MinHeapNode* extractMin(struct MinHeap* minHeap);
-    void decreaseKey(struct MinHeap* minHeap, int v, int dist) ;
-    bool isInMinHeap(struct MinHeap *minHeap, int v);
-    void printArr(int dist[], int n);
-    void dijkstra(struct Graph* graph, int src, int tar, int lineseg_idx);
-    struct Graph* createGraph(int V);
-    struct AdjListNode* newAdjListNode(int dest, int lineseg_idx, int weight);
-    
+     
     /* edgelist.c */
     void ELinitialize();
     struct Halfedge *HEcreate( struct Edge *, int );
@@ -158,6 +143,7 @@ namespace voronoi {
     void voronoi( Coordinate, Coordinate );
 
     /* voronoi-pageseg.c */
+    void CountCCsInZone(int zone_idx);
     struct AdjListNode* newAdjListNode(int dest, int lineseg_idx, int weight);
     void voronoi_pageseg(LineSegment ** ,unsigned int *, ImageData *);
     void set_param(int nm, int sr, float fr, int ta);
